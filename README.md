@@ -9,7 +9,7 @@ Set logging interval - edit log_interval (0-59 for minutes, 0-23 for hours, days
 
 Set logging interval unit - edit log_interval_unit (m for minutes, h for hours, d for days) default: d
 
-Polling frequency in seconds of CPU temp - edit poll_freq default: 5 (secs) (min 2)
+Polling frequency in seconds of CPU temp - edit poll_freq default: 15 (secs) (min 2)
 
 Monitor script does not survive reboots. If you wish, add an entry to /jffs/scripts/services-start and call this script to start a new monitor instance on reboot
 
