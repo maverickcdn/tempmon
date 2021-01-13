@@ -77,7 +77,7 @@ F_log_temp() {   # for logging avg/high/low cpu temp
 
 	# send logged info to router log
 	F_log_print "LogPeriod: ${log_interval}${log_interval_unit} CPUavg: ${cpuavg} CPUhigh: ${cpuhigh} CPUlow: ${cpulow} PollFreq: ${poll_freq}s Rec: ${count_calc}/${log_time}"
-	F_log_print "Uptime CPUhigh: ${alltimehigh} Uptime CPUlow: ${alltimelow} Current Monitor PID: ${monitor_pid}"
+	F_log_print "Uptime CPUhigh: ${alltimehigh} Uptime CPUlow: ${alltimelow} Current Monitor PID: ${monitor_pid} CPUnow: $(F_cputemp | sed 's/../&./')C"
 
 	# clear temps log and start over again
 	rm $temp_log ;touch $temp_log ;return 0
