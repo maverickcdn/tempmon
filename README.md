@@ -1,5 +1,5 @@
 # tempmon.sh
-AsusWRT-Merlin HND CPU Temperature Logging RT-AC86U, GT-AC5300, RT-AX86U, RT-AX88U
+AsusWRT-Merlin HND CPU Temperature Logging RT-AC86U, RT-AX86U, RT-AX88U
 
 Install to /jffs/scripts/ as tempmon.sh (or whatever you prefer)
 
