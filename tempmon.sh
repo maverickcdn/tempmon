@@ -1,8 +1,8 @@
 #!/bin/sh
 # Asus HND Temperature Logging Script
-log_interval=1   # interval in mins to log avg temp to router log 0-59m or 0-23h or 0-364
-log_interval_unit=d   # lowercase m (minutes) or h (hours) or d (days) are valid
-poll_freq=15   # polling frequency of cpu temp in seconds (min 2)
+log_interval=4   # interval in mins to log avg temp to router log 0-59m or 0-23h or 0-364
+log_interval_unit=h   # lowercase m (minutes) or h (hours) or d (days) are valid
+poll_freq=5   # polling frequency of cpu temp in seconds (min 2)
 # ##################################################################################################################
 script_name="$(basename "$0")"   # script name should be tempmon.sh but anything will work
 temp_log='/tmp/temps.tmp'   # log to record temps used to calc avg
