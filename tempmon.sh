@@ -13,7 +13,7 @@ atl_log='/tmp/temps_atl.tmp'   # alltimelow log
 [ "$log_interval_unit" = 'd' ] && log_time=$((log_interval * 86400 / poll_freq))
 [ ! -x /jffs/scripts/"$script_name" ] && chmod a+rx /jffs/scripts/"$script_name"
 [ ! -f $ath_log ] && touch $ath_log
-[ ! -f $ath_log ] && touch $atl_log
+[ ! -f $atl_log ] && touch $atl_log
 [ ! -f $temp_log ] && touch $temp_log
 F_log_print() { logger -t "tempmon[$$]" "$1" ;}
 F_totallinecount() { wc -l < $temp_log ;}  # function to be able to refresh counts
