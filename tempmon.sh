@@ -5,6 +5,8 @@ log_interval_unit=h   # lowercase m (minutes) or h (hours) or d (days) are valid
 poll_freq=5   # polling frequency of cpu temp in seconds (min 2)
 # ##################################################################################################################
 script_name="$(basename "$0")"   # script name should be tempmon.sh but anything will work
+script_ver='1.00'
+trap '' SIGHUP
 temp_log='/tmp/temps.tmp'   # log to record temps used to calc avg
 ath_log='/tmp/temps_ath.tmp'   # alltimehigh log
 atl_log='/tmp/temps_atl.tmp'   # alltimelow log
