@@ -5,7 +5,7 @@ log_interval_unit=h   # lowercase m (minutes) or h (hours) or d (days) are valid
 poll_freq=5   # polling frequency of cpu temp in seconds (min 2)
 # ##################################################################################################################
 script_name="$(basename "$0")"   # script name should be tempmon.sh but anything will work
-script_ver='1.01'
+script_ver='1.00'
 trap '' SIGHUP
 temp_log='/tmp/temps.tmp'   # log to record temps used to calc avg
 ath_log='/tmp/temps_ath.tmp'   # alltimehigh log
@@ -17,13 +17,7 @@ atl_log='/tmp/temps_atl.tmp'   # alltimelow log
 [ ! -f $ath_log ] && touch $ath_log
 [ ! -f $atl_log ] && touch $atl_log
 [ ! -f $temp_log ] && touch $temp_log
-F_log_print() { 
-	if [ -f '/jffs/scripts/scribe' ]; then
-		echo "$(date +%b %d %T) tempmon[$$]: $1" >> /tmp/syslog.log			# v1.01
-	else
-		logger -t "tempmon[$$]" "$1"
-	fi
-} 
+F_log_print() { logger -t "tempmon[$$]" "$1" ;}
 F_totallinecount() { wc -l < $temp_log ;}  # function to be able to refresh counts
 F_cputemp() { cut -c -3 < /sys/class/thermal/thermal_zone0/temp ;}   # function to check current CPU temp
 monitor_pid=$(ps | grep -v 'grep' | grep "$script_name monitor" | awk '{print $1}')
