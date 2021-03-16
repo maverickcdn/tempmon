@@ -19,7 +19,7 @@ atl_log='/tmp/temps_atl.tmp'   # alltimelow log
 [ ! -f $temp_log ] && touch $temp_log
 F_log_print() { 
 	if [ -f '/jffs/scripts/scribe' ]; then
-		echo "$(date +%b %d %T) tempmon[$$]: $1" >> /tmp/syslog.log			# v1.01
+		echo "$(date +"%b %d %T") tempmon[$$]: $1" >> /tmp/syslog.log			# v1.01
 	else
 		logger -t "tempmon[$$]" "$1"
 	fi
