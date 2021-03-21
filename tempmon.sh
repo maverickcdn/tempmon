@@ -77,7 +77,7 @@ F_load_tempmon() {
 	}
 	(sh /jffs/scripts/"$script_name" monitor) & background_pid=$!   # call script as monitor in background
 	F_log_print "$(started)"
-	printf "%s \n" "$(started)"
+	# printf "%s \n" "$(started)"
 	echo "$run_epoch" > $temp_start_log			# v1.01
 	exit 0   # exit dont continue to logging if called by cron and found no monitor running
 } ### load_tempmon
