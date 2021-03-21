@@ -23,4 +23,6 @@ Run with 'sh /jffs/scripts/tempmon.sh' to start logging monitor in background, i
 
 To manually log currently recorded temps before log interval (cron), 'sh /jffs/scripts/tempmon.sh logging'
 
+The script requires that your NTP time/date is set.  If your router fails to update with NTP, tempmon will fail to start.
+
 Thank you for using this script.
