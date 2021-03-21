@@ -22,7 +22,7 @@ temp_avg_log='/tmp/temps_avg.tmp'   # avg of averages log   # v1.01
 [ ! -f $atl_log ] && touch $atl_log
 [ ! -f $temp_log ] && touch $temp_log
 [ ! -f $temp_avg_log ] && touch $temp_avg_log			# v1.01
-F_log_print() { logger -t "tempmon[$$]" "$1" ;}
+F_log_print() { logger -t "tempmon[$$]" "$1" ;printf '%s \n' "$1" ;}
 F_totallinecount() { wc -l < $temp_log ;}  # function to be able to refresh counts
 F_cputemp() { cut -c -3 < /sys/class/thermal/thermal_zone0/temp ;}   # function to check current CPU temp
 F_format() { sed 's/../&./g' | sed 's/$/&C/g' ;}   # add the decimal formatting
@@ -35,13 +35,13 @@ F_ntp_wait() {			# v1.01
 		while [ "$(nvram get ntp_ready)" -eq 0 ] && [ "$ntp_wait_time" -lt 600 ] ; do
 			ntp_wait_time="$((ntp_wait_time + 1))"
 			if [ "$ntp_wait_time" -eq 300 ]; then
-				F_log_and_show "Waiting for NTP to sync, 5 mins have passed, waiting 5 more mins"
+				F_log_print "Waiting for NTP to sync, 5 mins have passed, waiting 5 more mins"
 			fi
 			sleep 1
 		done
 		if [ "$ntp_wait_time" -ge 600 ] ; then
-			F_log_and_show "NTP failed to sync and update router time after 10 mins"
-			F_log_and_show "Please check your NTP date/time settings, tempmon cannot start"
+			F_log_print "NTP failed to sync and update router time after 10 mins"
+			F_log_print "Please check your NTP date/time settings, tempmon cannot start"
 			F_clean_exit
 		fi
 	fi
