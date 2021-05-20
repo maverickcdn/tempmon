@@ -6,7 +6,7 @@ poll_freq=5   # polling frequency of cpu temp in seconds (min 2)
 max_avg=5000	# max num of averages to save to ram		v1.01
 # ##################################################################################################################
 script_name="$(basename "$0")"   # script name should be tempmon.sh but anything will work
-script_ver='1.01'
+script_ver='1.02'
 trap '' SIGHUP
 temp_log='/tmp/temps.tmp'   # log to record temps used to calc avg
 ath_log='/tmp/temps_ath.tmp'   # alltimehigh log
@@ -42,7 +42,7 @@ F_ntp_wait() {			# v1.01
 		if [ "$ntp_wait_time" -ge 600 ] ; then
 			F_log_print "NTP failed to sync and update router time after 10 mins"
 			F_log_print "Please check your NTP date/time settings, tempmon cannot start"
-			F_clean_exit
+			exit 0			# v1.02  there was no clean exit function, is loaded in cron so should run again
 		fi
 	fi
 } ### ntp_wait
