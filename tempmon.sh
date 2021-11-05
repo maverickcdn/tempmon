@@ -8,9 +8,13 @@ max_avg=5000	# max num of averages to save to ram		v1.01
 script_name="$(basename "$0")"   # script name should be tempmon.sh but anything will work
 script_ver='1.02'
 trap '' SIGHUP
+TZ="$(cat /etc/TZ)"			# v1.02
+export TZ					# v1.02
 temp_log='/tmp/temps.tmp'   # log to record temps used to calc avg
 ath_log='/tmp/temps_ath.tmp'   # alltimehigh log
 atl_log='/tmp/temps_atl.tmp'   # alltimelow log
+ath_time_log='/tmp/temps_ath_time.tmp'			# v1.02
+atl_time_log='/tmp/temps_atl_time.tmp'			# v1.02
 temp_start_log='/tmp/temps_start.tmp'   # epoch start of monitor log for calc monitor uptime	# v1.01
 temp_avg_log='/tmp/temps_avg.tmp'   # avg of averages log   # v1.01
 [ -f $temp_start_log ] && started_epoch=$(cat $temp_start_log)	# print out start epoch from temp file			# v1.01
@@ -22,12 +26,17 @@ temp_avg_log='/tmp/temps_avg.tmp'   # avg of averages log   # v1.01
 [ ! -f $atl_log ] && touch $atl_log
 [ ! -f $temp_log ] && touch $temp_log
 [ ! -f $temp_avg_log ] && touch $temp_avg_log			# v1.01
+[ ! -f $ath_time_log ] && touch $ath_time_log			# v1.02
+[ ! -f $atl_time_log ] && touch $atl_time_log			# v1.02
+ath_time="$(cat "$ath_time_log")"						# v1.02
+atl_time="$(cat "$atl_time_log")"						# v1.02
 F_log_print() { logger -t "tempmon[$$]" "$1" ;printf '%s \n' "$1" ;}
 F_totallinecount() { wc -l < $temp_log ;}  # function to be able to refresh counts
 F_cputemp() { cut -c -3 < /sys/class/thermal/thermal_zone0/temp ;}   # function to check current CPU temp
 F_format() { sed 's/../&./g' | sed 's/$/&C/g' ;}   # add the decimal formatting
 monitor_pid=$(ps | grep -v 'grep' | grep "$script_name monitor" | awk '{print $1}')
 run_epoch="$(date +"%s")"			# v1.01  should be correct if monitor is already running and checked ntp state
+run_date="$(date +"%c")"			# v1.02
 
 F_ntp_wait() {			# v1.01
 	if [ "$(nvram get ntp_ready)" -eq 0 ] ; then
@@ -72,12 +81,12 @@ F_load_tempmon() {
 	printf "Initializing... \n"
 	F_ntp_wait			# v1.01 ntp wait to set epoch
 	run_epoch="$(date +"%s")"		# v1.01 set correct time for first run
+	run_date="$(date +"%c")"		# v1.02
 	started() {
 		echo "Started $script_name w/ PID $background_pid Current CPUtemp:$(F_cputemp | F_format) Log Interval:${log_interval}${log_interval_unit} PollFreq:${poll_freq}s"
 	}
 	(sh /jffs/scripts/"$script_name" monitor) & background_pid=$!   # call script as monitor in background
 	F_log_print "$(started)"
-	# printf "%s \n" "$(started)"
 	echo "$run_epoch" > $temp_start_log			# v1.01
 	exit 0   # exit dont continue to logging if called by cron and found no monitor running
 } ### load_tempmon
@@ -148,10 +157,12 @@ F_log_temp() {   # for logging avg/high/low cpu temp
 	F_high_low
 
 	if [ "$alltimehigh" = '' ] || [ $cpuhighunf -gt $alltimehigh ] ; then   # if alltimehigh is empty or temp log has higher, record new high
-		rm $ath_log 2> /dev/null ;echo "$cpuhighunf" > $ath_log ;alltimehigh=$cpuhighunf
+		rm $ath_log 2> /dev/null ; echo "$cpuhighunf" > $ath_log ; alltimehigh=$cpuhighunf
+		echo "$(/bin/date +"%c")" > $ath_time_log ; ath_time="$run_date"			# v1.02
 	fi
 	if [ "$alltimelow" = '' ] || [ $cpulowunf -lt $alltimelow ] ; then
-		rm $atl_log 2> /dev/null ;echo "$cpulowunf" > $atl_log ;alltimelow=$cpulowunf
+		rm $atl_log 2> /dev/null ; echo "$cpulowunf" > $atl_log ; alltimelow=$cpulowunf
+		echo "$(/bin/date +"%c")" > $atl_time_log ; atl_time="$run_date"			# v1.02
 	fi
 	# calc total of temps in log
 	sleep $poll_freq   # dont miss last temp check
@@ -163,7 +174,9 @@ F_log_temp() {   # for logging avg/high/low cpu temp
 
 	# send logged info to router log
 	F_log_print "Logperiod - CPUnow: $(F_cputemp | F_format) CPUavg: ${cpuavg} CPUhigh: ${cpuhigh} CPUlow: ${cpulow}"
-	F_log_print "Alltime - CPUhigh: ${alltimehigh} CPUlow: ${alltimelow} Avg of last ${avg_count} averages: ${uptime_avg} "
+	F_log_print "Alltime - CPUhigh: ${alltimehigh} recorded ${ath_time}"
+	F_log_print "Alltime - CPUlow: ${alltimelow} recorded ${atl_time}"
+	F_log_print "Alltime - CPUavg: ${uptime_avg} of last ${avg_count} recorded averages"
 	F_log_print "LogPeriod: ${log_interval}${log_interval_unit} PollFreq: ${poll_freq}s Logged/Expected: ${count_calc}/${log_time}"
 	F_log_print "Current Monitor PID ${monitor_pid} Monitor Uptime: $(F_calc_uptime)"			# v1.01
 
@@ -173,18 +186,20 @@ F_log_temp() {   # for logging avg/high/low cpu temp
 # ####################################################################################################################
 if [ -z "$monitor_pid"  ] ; then   # monitor running check
 	F_load_tempmon
-else
-	if [ "$1" = '' ] ; then
-		F_calc_avg ;F_averages ;F_high_low
-		printf "	tempmon appears to be already monitoring with PID %s \n" "$monitor_pid" # only terminal print if manually run
-		printf "	Current: %s Current Avg: %s of %s polled temps at %s second polling \n" "$(F_cputemp | F_format)" "$cpuavg" "$count_calc" "$poll_freq"
-		printf "	Logging period: ${log_interval}${log_interval_unit} CPUhigh: %s CPUlow: %s \n" "$cpuhigh" "$cpulow"
-		printf "	Alltime: CPUhigh: %s CPUlow: %s Avg of last %s averages: %s \n" "$(echo $alltimehigh | F_format)" "$(echo $alltimelow | F_format)" "$avg_count" "$uptime_avg"
-		printf "	Monitor uptime: %s \n" "$(F_calc_uptime)"			# v1.01
-	fi
 fi
 
-if [ "$1" = 'logging' ] ; then F_log_temp   # logging call
+if [ "$1" = '' ] ; then
+	F_calc_avg ; F_averages ; F_high_low
+	printf "	tempmon appears to be already monitoring with PID %s \n" "$monitor_pid" # only terminal print if manually run
+	printf "	Current: %s \n" "$(F_cputemp | F_format)"
+	printf "	Current Avg: %s of %s polled temps at %s second polling \n"  "$cpuavg" "$count_calc" "$poll_freq"
+	printf "	Logging period: ${log_interval}${log_interval_unit} CPUhigh: %s CPUlow: %s \n" "$cpuhigh" "$cpulow"
+	printf "	Alltime - CPUhigh: %s recorded %s \n" "$(echo $alltimehigh | F_format)" "$ath_time"
+	printf "	Alltime - CPUlow: %s recorded %s \n" "$(echo $alltimelow | F_format)" "$atl_time"
+	printf "	Alltime - CPUavg: %s of last %s recorded averages \n" "$uptime_avg" "$avg_count"
+	printf "	Monitor uptime: %s \n" "$(F_calc_uptime)"			# v1.01
+elif [ "$1" = 'logging' ] ; then 
+	F_log_temp   # logging call
 elif [ "$1" = 'monitor' ] ; then  # called as background monitor
 	while true
 	do
@@ -193,3 +208,4 @@ elif [ "$1" = 'monitor' ] ; then  # called as background monitor
 	done   # write temp sleep, repeat
 fi
 exit 0
+# END
