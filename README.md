@@ -5,11 +5,11 @@ Install to /jffs/scripts/ as tempmon.sh (or whatever you prefer)
 
 Script will send to router log average/high/low CPU temperatures for logging session at set logging interval
 
-Set logging interval - edit log_interval (0-59 for minutes, 0-23 for hours, days) default: 1
+Set logging interval - edit log_interval (0-59 for minutes, 0-23 for hours, days) default: 6
 
-Set logging interval unit - edit log_interval_unit (m for minutes, h for hours, d for days) default: d
+Set logging interval unit - edit log_interval_unit (m for minutes, h for hours, d for days) default: h
 
-Polling frequency in seconds of CPU temp - edit poll_freq default: 15 (secs) (min 2)
+Polling frequency in seconds of CPU temp - edit poll_freq default: 20 (secs) (min 2)
 
 Monitor script does not survive reboots. If you wish, add an entry to /jffs/scripts/services-start and call this script to start a new monitor instance on reboot
 
